@@ -1,0 +1,118 @@
+$AdminURL = "https://m365b033249-admin.sharepoint.com/"
+$AdminName = "admin@M365B033249.onmicrosoft.com"
+$SPName = "LynneR@M365B033249.OnMicrosoft.com"  
+
+#User Names Password to connect
+$Password = Read-host -assecurestring "Enter Password for $AdminName"
+$Credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $AdminName, $Password
+ 
+#Connect to SharePoint Online
+try
+    {
+        Connect-SPOService -url $AdminURL -credential $Credential
+        }
+   Catch {
+           if($_.Exception.Message.contains("The remote server returned an error: (401) Unauthorized"))
+                {write-host -f Red "PermissionsMissiong.Check account permissions"
+                Write-Error "terminating" -ErrorAction Stop
+          }
+            elseif($_.Exception.Message.contains("Could not connect to SharePoint Online"))
+                {write-host -f Red "Cant connect to Microsoft Servers. Check internet connectivity"
+                Write-Error "terminating" -ErrorAction Stop
+          }
+        }
+
+
+#Read more: https://www.sharepointdiary.com/2019/05/sharepoint-online-handling-errors-with-try-catch-in-powershell.html#ixzz6jZ0Q5Ipt
+
+ 
+$Sites = Get-SPOSite -Limit ALL
+ 
+Foreach ($site in $Sites)
+{ 
+try{ Write-host -f Yellow $site.Title
+        If ($site.LockState -contains "NoAccess")
+        {
+            $UnlockingSite="unlock "+$site.url 
+            Set-SPOSite -Identity $site -Lockstate “Unlock”| Out-Null   #Unlock site
+            $statelock=(Get-SPOSite -Identity $site).Lockstate
+            If ($statelock -contains "Unlock")        #Verifies if the lock was removed succesfully
+                {echo "$UnlockingSite was succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+                }
+              else {echo "$UnlockingSite was NOT succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+                 }
+            $title=$site.Title
+            echo "Initial Permissions on the library $title " | add-content -path "C:\a\logs.csv" #writes to CSV original permissions of the site
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv" #Gets a list with original admins
+            
+
+                try{
+        Set-SPOUser -site $Site -LoginName $SPName -IsSiteCollectionAdmin $True | Out-Null  #Add SP account to Site as admin
+        }
+                catch{}
+                $status=Get-SPOUser -Site $site.Url
+                if($status.IsSiteAdmin -eq("True")) #Verifies if it was succesfull
+                     { $localsite = $site.Url
+                     echo "Added Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                }
+                  else 
+                  {$localsite = $site.Url 
+                  echo "Did NOT add Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                  }
+            echo "Final Permissions on the library $title " | add-content -path "C:\a\logs.csv" 
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv"
+            Set-SPOSite -Identity $site -Lockstate “NoAccess” | Out-Null
+          
+            $UnlockingSite="lock "+$site.url 
+            $stateoflock=(Get-SPOSite -Identity $site).Lockstate
+                If ($stateoflock -contains "NoAccess")    #Verifies if the lock was succesfully applied
+                 {echo "$UnlockingSite was succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+                }
+                 else {
+              echo "$UnlockingSite was NOT succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+                 }
+            $title=$site.Title
+           
+            
+        }
+       
+      
+        else
+            {$title=$site.Title
+            echo "Initial Permissions on the library $title " | add-content -path "C:\a\logs.csv" #writes to CSV original permissions of the site
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv" #Gets a list with original admins
+            
+
+                try{
+        Set-SPOUser -site $Site -LoginName $SPName -IsSiteCollectionAdmin $True | Out-Null  #Add SP account to Site as admin
+        }
+                catch{}
+                $status=Get-SPOUser -Site $site.Url
+                if($status.IsSiteAdmin -eq("True")) #Verifies if it was succesfull
+                     { $localsite = $site.Url
+                     echo "Added Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                }
+                  else 
+                  {$localsite = $site.Url 
+                  echo "Did NOT add Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                  }
+            echo "Final Permissions on the library $title " | add-content -path "C:\a\logs.csv" 
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv"
+            
+            }
+        }
+
+     catch  
+               {
+                if ($_.Exception.Message.contains("Set-SPOUser : The user does not exist or is not unique"))
+                        {
+                            $errMessage = "User is not found in the tenant.Check UPN"
+                        }
+                
+                
+                Write-host $errMessage -f DarkRed
+        
+                }
+        }
+            
+    
