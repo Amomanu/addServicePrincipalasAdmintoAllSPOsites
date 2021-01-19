@@ -1,6 +1,10 @@
 $AdminURL = "https://m365b033249-admin.sharepoint.com/"
 $AdminName = "admin@M365B033249.onmicrosoft.com"
-$SPName = "LynneR@M365B033249.OnMicrosoft.com"  
+$SPName = "NestorW@M365B033249.OnMicrosoft.com"  
+cd C:\
+mkdir SPOSP  #Creates folder to store log CSV
+
+cd .\SPOSP
 
 #User Names Password to connect
 $Password = Read-host -assecurestring "Enter Password for $AdminName"
@@ -37,13 +41,13 @@ try{ Write-host -f Yellow $site.Title
             Set-SPOSite -Identity $site -Lockstate “Unlock”| Out-Null   #Unlock site
             $statelock=(Get-SPOSite -Identity $site).Lockstate
             If ($statelock -contains "Unlock")        #Verifies if the lock was removed succesfully
-                {echo "$UnlockingSite was succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+                {echo "$UnlockingSite was succesfull"| add-content -path "C:\SPOSP\logs.csv" #writes to CSV unlock of the site
                 }
-              else {echo "$UnlockingSite was NOT succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+              else {echo "$UnlockingSite was NOT succesfull"| add-content -path "C:\SPOSP\logs.csv" #writes to CSV unlock of the site
                  }
             $title=$site.Title
-            echo "Initial Permissions on the library $title " | add-content -path "C:\a\logs.csv" #writes to CSV original permissions of the site
-            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv" #Gets a list with original admins
+            echo "Initial Permissions on the library $title " | add-content -path "C:\SPOSP\logs.csv" #writes to CSV original permissions of the site
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\SPOSP\logs.csv" #Gets a list with original admins
             
 
                 try{
@@ -53,23 +57,23 @@ try{ Write-host -f Yellow $site.Title
                 $status=Get-SPOUser -Site $site.Url
                 if($status.IsSiteAdmin -eq("True")) #Verifies if it was succesfull
                      { $localsite = $site.Url
-                     echo "Added Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                     echo "Added Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\SPOSP\logs.csv"
                 }
                   else 
                   {$localsite = $site.Url 
-                  echo "Did NOT add Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                  echo "Did NOT add Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\SPOSP\logs.csv"
                   }
-            echo "Final Permissions on the library $title " | add-content -path "C:\a\logs.csv" 
-            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv"
+            echo "Final Permissions on the library $title " | add-content -path "C:\SPOSP\logs.csv" 
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\SPOSP\logs.csv"
             Set-SPOSite -Identity $site -Lockstate “NoAccess” | Out-Null
           
             $UnlockingSite="lock "+$site.url 
             $stateoflock=(Get-SPOSite -Identity $site).Lockstate
                 If ($stateoflock -contains "NoAccess")    #Verifies if the lock was succesfully applied
-                 {echo "$UnlockingSite was succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+                 {echo "$UnlockingSite was succesfull"| add-content -path "C:\SPOSP\logs.csv" #writes to CSV unlock of the site
                 }
                  else {
-              echo "$UnlockingSite was NOT succesfull"| add-content -path "C:\a\logs.csv" #writes to CSV unlock of the site
+              echo "$UnlockingSite was NOT succesfull"| add-content -path "C:\SPOSP\logs.csv" #writes to CSV unlock of the site
                  }
             $title=$site.Title
            
@@ -79,8 +83,8 @@ try{ Write-host -f Yellow $site.Title
       
         else
             {$title=$site.Title
-            echo "Initial Permissions on the library $title " | add-content -path "C:\a\logs.csv" #writes to CSV original permissions of the site
-            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv" #Gets a list with original admins
+            echo "Initial Permissions on the library $title " | add-content -path "C:\SPOSP\logs.csv" #writes to CSV original permissions of the site
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\SPOSP\logs.csv" #Gets a list with original admins
             
 
                 try{
@@ -90,14 +94,14 @@ try{ Write-host -f Yellow $site.Title
                 $status=Get-SPOUser -Site $site.Url
                 if($status.IsSiteAdmin -eq("True")) #Verifies if it was succesfull
                      { $localsite = $site.Url
-                     echo "Added Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                     echo "Added Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\SPOSP\logs.csv"
                 }
                   else 
                   {$localsite = $site.Url 
-                  echo "Did NOT add Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\a\logs.csv"
+                  echo "Did NOT add Site Collection Admin succesfull for $SPName for: $localsite" | add-content -path "C:\SPOSP\logs.csv"
                   }
-            echo "Final Permissions on the library $title " | add-content -path "C:\a\logs.csv" 
-            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\a\logs.csv"
+            echo "Final Permissions on the library $title " | add-content -path "C:\SPOSP\logs.csv" 
+            Get-SPOUser -Site $site.Url -Limit ALL | where { $_.IsSiteAdmin -eq $True} | Select-Object DisplayName | add-content -path "C:\SPOSP\logs.csv"
             
             }
         }
